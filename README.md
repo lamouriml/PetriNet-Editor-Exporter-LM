@@ -6,9 +6,9 @@ This editor allows researchers and developers to visually design complex Petri N
 
 ---
 
-## The Web App Versions
+## The Web App link
 
-- v1 :  [petrinet-editor.netlify.app/](https://petrinet-editor.netlify.app/)
+-   [petrinet-editor.netlify.app/](https://petrinet-editor.netlify.app/)
 
 ---
 
