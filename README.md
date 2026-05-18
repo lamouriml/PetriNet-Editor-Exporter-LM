@@ -1,5 +1,7 @@
 # Petri Net Editor & Simulator
 
+[🌎 اقرأ باللغة العربية (Read in Arabic)](README_AR.md)
+
 Welcome to the **Petri Net Editor & Simulator**—a zero-dependency, professional-grade visual Petri Net modeler, interactive simulator, and formal verification compiler. Designed for both academic research and engineering design, this web application provides an intuitive graphical interface to create, simulate, and export Place/Transition (P/T) nets with high-level arc semantics.
 
 This editor allows researchers and developers to visually design complex Petri Net systems and compile them directly into formal [Maude rewriting logic](https://maude.cs.illinois.edu/) specifications to perform state-space exploration, reachability analysis, and model checking.
