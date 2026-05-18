@@ -1,70 +1,161 @@
+--- this example is in figure-a in the new paper with modification (not test in MAUDE)
+
+
+
 
 mod PETRI-NET is
     protecting BOOL .
     protecting INT .
     including CONFIGURATION .
 
-    op PLACE : -> Cid . --- 'Cid' Class Id from CONFIGURATION Module
-    op N :_ : Int -> Attribute [gather(&)] . --- 'Attribute' from CONFIGURATION Module
+    sorts Tid Attribute .
+    subsort Tid < Oid .
+    subsort Attribute < AttributeSet .
 
-    ops P0 P1 P2 P3 : -> Oid .
-    ops T0 T1 T2 T3 T4 T5 : -> Oid .
-    op enable(_,_) : Oid Bool -> Msg .
+   
+    op N :_ : Int -> Attribute [ ctor gather (&) ]. --- 'Attribute' from CONFIGURATION Module
+    op <_ | _> : Oid AttributeSet -> Object [ ctor ] .
+
+    ops P1 P2 P3 P4 P5 P6 P7 P8 P0 : -> Oid .
+    ops T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T0 : -> Tid .
+    
+    op enabled(_,_) : Tid Bool -> Msg [ ctor ]  . --- enabling message for transitions
 
     op initial : -> Configuration .
-
+        
     vars x y z : Int .
     var t : Bool .
 
     eq initial = 
-        < P0 : PLACE | N : 1 > < P1 : PLACE | N : 2 > < P2 : PLACE | N : 0 > < P3 : PLACE | N : 4 > enable(T0,true) enable(T1,false) enable(T2,true) enable(T3,true) enable(T4,false) enable(T5,true) .
+        < P1 | N : 0 > < P2 | N : 0 > < P3 | N : 1 > < P4 | N : 1 > < P5 | N : 0 > < P6 | N : 2 > < P7 | N : 1 > < P8 | N : 0 > < P0 | N : 4 > enabled(T1,false) enabled(T2,false) enabled(T3,false) enabled(T4,false) enabled(T5,false) enabled(T6,false) enabled(T7,false) enabled(T8,false) enabled(T9,false) enabled(T10,false) enabled(T0,true) .
 
-    ceq[enable-T1] : 
-        < P0 : PLACE | N : x > enable(T1,false) = 
-        < P0 : PLACE | N : x > enable(T1,true) 
+    ceq[EN-T1] :
+        < P0 | N : x > enabled(T1,false) = 
+        < P0 | N : x > enabled(T1,true) 
+        if (x >= 2) .
+
+    rl[FI-T1] : 
+        < P0 | N : x > < P1 | N : y > < P6 | N : z > enabled(T1,true) enabled(T2,t) enabled(T3,t) => 
+        < P0 | N : x - 2 > < P1 | N : y + 1 > < P6 | N : z + 1 > enabled(T1,false) enabled(T2,false) enabled(T3,false) .
+
+    ceq[EN-T2] :
+        < P0 | N : x > enabled(T2,false) = 
+        < P0 | N : x > enabled(T2,true) 
         if (x >= 3) .
-    
-    ceq[enable-T2] :
-         < P1 : PLACE | N : x > enable(T2,false) = 
-         < P1 : PLACE | N : x > enable(T2,true) 
-         if (x >= 1) .
 
-    ceq[enable-T3] :
-         < P1 : PLACE | N : x > enable(T3,false) =
-          < P1 : PLACE | N : x > enable(T3,true) 
-          if (x >= 2) .
+    rl[FI-T2] : 
+        < P0 | N : x > < P2 | N : y > < P5 | N : z > enabled(T2,true) enabled(T1,t) enabled(T3,t) => 
+        < P0 | N : x - 3 > < P2 | N : y + 1 > < P5 | N : z + 1 > enabled(T2,false) enabled(T1,false) enabled(T3,false) .
 
-    ceq[enable-T4] :
-        < P1 : PLACE | N : x > < P2 : PLACE | N : y > enable(T4,false) = 
-        < P1 : PLACE | N : x > < P2 : PLACE | N : y > enable(T4,true) 
-        if (x == 0 ) and (y >= 1) .
+    ceq[EN-T3] :
+        < P2 | N : x > < P0 | N : y > enabled(T3,false) = 
+        < P2 | N : x > < P0 | N : y > enabled(T3,true) 
+        if (x >= 1) and (y >= 1) .
 
-    ceq[enable-T5] : 
-        < P3 : PLACE | N : x > enable(T5,false) = 
-        < P3 : PLACE | N : x > enable(T5,true) if (x >= 4) .
-    
-    rl[fire-T0] : 
-        < P0 : PLACE | N : x > enable(T0,true) => 
-        < P0 : PLACE | N : x + 1 > enable(T0,true) .
+    rl[FI-T3] : 
+        < P2 | N : x > < P0 | N : y > < P1 | N : z > enabled(T3,true) enabled(T1,t) enabled(T2,t) => 
+        < P2 | N : x - 1 > < P0 | N : y - 1 > < P1 | N : z + 1 > enabled(T3,false) enabled(T1,false) enabled(T2,false) .
 
-    rl[fire-T1] : 
-        < P0 : PLACE | N : x > enable(T1,true) enable(T4,t) < P1 : PLACE | N : y > =>  
-        < P0 : PLACE | N : x - 3 > < P1 : PLACE | N : y + 1 > enable(T1,false) enable(T4,false).
+    ceq[EN-T4] :
+        < P3 | N : x > enabled(T4,false) = 
+        < P3 | N : x > enabled(T4,true) 
+        if (x >= 1) .
 
-    rl[fire-T2] : 
-        < P1 : PLACE | N : x > < P2 : PLACE | N : y > enable(T2,true) enable(T3,t) => 
-        < P1 : PLACE | N : x - 1 > < P2 : PLACE | N : y + 1 > enable(T2,false)  enable(T3,false) .
+    rl[FI-T4] : 
+        < P3 | N : x > < P1 | N : y > enabled(T4,true) enabled(T5,t) => 
+        < P3 | N : x - 1 > < P1 | N : y + 1 > enabled(T4,false) enabled(T5,false) .
 
-    rl[fire-T3] : 
-        < P1 : PLACE | N : x > < P3 : PLACE | N : y > enable(T3,true) enable(T2,t) => 
-        < P1 : PLACE | N : x - 2 > < P3 : PLACE | N : y + 1 > enable(T3,false) enable(T2,false) .
+    ceq[EN-T5] :
+        < P4 | N : x > < P1 | N : y > < P3 | N : z > enabled(T5,false) = 
+        < P4 | N : x > < P1 | N : y > < P3 | N : z > enabled(T5,true) 
+        if (x >= 1) and (y >= 2) and (z >= 1) .
 
-    rl[fire-T4] : 
-        < P1 : PLACE | N : x > < P2 : PLACE | N : y > < P3 : PLACE | N : z > enable(T4,true) => 
-        < P1 : PLACE | N : x > < P2 : PLACE | N : y - 1 > < P3 : PLACE | N : z + 1 > enable(T4,false) .
+    rl[FI-T5] : 
+        < P4 | N : x > < P1 | N : y > < P3 | N : z > enabled(T5,true) enabled(T4,t) => 
+        < P4 | N : x - 1 > < P1 | N : y - 2 > < P3 | N : z > enabled(T5,false) enabled(T4,false) .
 
-    rl[fire-T5] : 
-        < P3 : PLACE | N : x > enable(T5,true) => 
-        < P3 : PLACE | N : x - 4 > enable(T5,false) .
+    ceq[EN-T6] :
+        < P6 | N : x > < P7 | N : y > enabled(T6,false) = 
+        < P6 | N : x > < P7 | N : y > enabled(T6,true) 
+        if (x >= 1) and (y == 0 ) .
+
+    rl[FI-T6] : 
+        < P6 | N : x > < P5 | N : y > < P7 | N : z > enabled(T6,true) enabled(T8,t) enabled(T9,t) => 
+        < P6 | N : x - 1 > < P5 | N : y + 1 > < P7 | N : z > enabled(T6,false) enabled(T8,false) enabled(T9,false) .
+
+    ceq[EN-T7] :
+        < P5 | N : x > enabled(T7,false) = 
+        < P5 | N : x > enabled(T7,true) 
+        if (x >= 2) .
+
+    rl[FI-T7] : 
+        < P5 | N : x > < P4 | N : y > < P7 | N : z > enabled(T7,true) enabled(T6,t) => 
+        < P5 | N : x - 2 > < P4 | N : y + 1 > < P7 | N : z + 1 > enabled(T7,false) enabled(T6,false) .
+
+    ceq[EN-T8] :
+        < P7 | N : x > < P6 | N : y > enabled(T8,false) = 
+        < P7 | N : x > < P6 | N : y > enabled(T8,true) 
+        if (x >= 2) and (y >= 1) .
+
+    rl[FI-T8] : 
+        < P7 | N : x > < P6 | N : y > < P3 | N : z > enabled(T8,true) enabled(T6,t) enabled(T9,t) => 
+        < P7 | N : x - 1 > < P6 | N : y - 1 > < P3 | N : z + 1 > enabled(T8,false) enabled(T6,false) enabled(T9,false) .
+
+    ceq[EN-T9] :
+        < P6 | N : x > enabled(T9,false) = 
+        < P6 | N : x > enabled(T9,true) 
+        if (x >= 1) .
+
+    rl[FI-T9] : 
+        < P6 | N : x > < P8 | N : y > enabled(T9,true) enabled(T6,t) enabled(T8,t) => 
+        < P6 | N : x - 1 > < P8 | N : y + 1 > enabled(T9,false) enabled(T6,false) enabled(T8,false) .
+
+    ceq[EN-T10] :
+        < P8 | N : x > enabled(T10,false) = 
+        < P8 | N : x > enabled(T10,true) 
+        if (x >= 2) .
+
+    rl[FI-T10] : 
+        < P8 | N : x > enabled(T10,true) => 
+        < P8 | N : x - 2 > enabled(T10,false) .
+
+    rl[FI-T0] : 
+        < P0 | N : x > enabled(T0,true) => 
+        < P0 | N : x + 1 > enabled(T0,true) .
 
 endm
+
+
+--- ============================================================
+--- Useful commands to run this model in Maude
+--- ============================================================
+
+--- Start Maude and load this file:
+---   ./maude.linux64
+---   load  files/2026_files/PN-new1-bouchriet-a.maude .
+--- load /home/vboxuser02/Desktop/Maude/maude-3.1/files/2026_files/PN-new1-bouchriet-a.maude .
+
+
+--- Show the module to verify it is loaded correctly:
+---   show module PETRI-NET .
+
+--- Execute one step of the model starting from initial configuration:
+---   rew [1] initial .
+
+--- Execute 5 steps:
+---   rew [5] initial .
+
+--- Execute until terminal state (no more rules apply):
+---   rew initial .
+
+--- Search all reachable configurations from initial:
+---   search initial =>* C:Configuration .
+
+--- Search reachable configurations within 10 steps:
+---   search [10] initial =>* C:Configuration .
+
+--- Show the complete path from initial to a specific state (e.g., state 7):
+---   show path 7 .
+
+--- set trace on .
+
