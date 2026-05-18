@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><pnml>
+<net id="Net-One" type="P/T net">
+<token id="Default" enabled="true" red="0" green="0" blue="0"/>
+<place id="P1">
+<graphics><position x="448.5599999856954" y="315.36000183105494"/></graphics>
+<name><value>P1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P2">
+<graphics><position x="439.25759997940054" y="558.8352026367183"/></graphics>
+<name><value>P2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P3">
+<graphics><position x="764.1215999794005" y="230.51520263671873"/></graphics>
+<name><value>P3</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,1</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P4">
+<graphics><position x="598.2335999794003" y="550.1952026367185"/></graphics>
+<name><value>P4</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,1</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P5">
+<graphics><position x="883.3535999794004" y="548.4672026367186"/></graphics>
+<name><value>P5</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P6">
+<graphics><position x="1082.0735999794003" y="308.2752026367187"/></graphics>
+<name><value>P6</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,2</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P7">
+<graphics><position x="866.0735999794005" y="342.8352026367187"/></graphics>
+<name><value>P7</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,1</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P8">
+<graphics><position x="1097.6255999794002" y="548.4672026367188"/></graphics>
+<name><value>P8</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P9">
+<graphics><position x="223.2575999794006" y="408.4992026367187"/></graphics>
+<name><value>P0</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,4</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<transition id="T10">
+<graphics><position x="268.28959997940046" y="279.9072026367187"/></graphics>
+<name><value>T1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T11">
+<graphics><position x="197.44159997940045" y="549.4752026367187"/></graphics>
+<name><value>T2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T12">
+<graphics><position x="416.8975999794006" y="406.0512026367187"/></graphics>
+<name><value>T3</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T13">
+<graphics><position x="577.6015999794006" y="214.24320263671868"/></graphics>
+<name><value>T4</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T14">
+<graphics><position x="589.6975999794004" y="397.41120263671877"/></graphics>
+<name><value>T5</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T15">
+<graphics><position x="892.0975999793994" y="438.88320263671875"/></graphics>
+<name><value>T6</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T16">
+<graphics><position x="719.2975999794011" y="542.5632026367184"/></graphics>
+<name><value>T7</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T17">
+<graphics><position x="904.1935999794005" y="202.1472026367188"/></graphics>
+<name><value>T8</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T18">
+<graphics><position x="1083.9055999794014" y="411.2352026367187"/></graphics>
+<name><value>T9</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T19">
+<graphics><position x="1054.5295999794" y="641.0592026367184"/></graphics>
+<name><value>T10</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<transition id="T20">
+<graphics><position x="60.929599979400656" y="369.76320263671846"/></graphics>
+<name><value>T0</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>0</value></priority>
+</transition>
+<arc id="arc0" source="T20" target="P9">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc1" source="P9" target="T10">
+<inscription><value>Default,2</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc2" source="P9" target="T11">
+<inscription><value>Default,3</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc3" source="T11" target="P2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc4" source="P2" target="T12">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc5" source="P9" target="T12">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc6" source="T10" target="P1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc7" source="T13" target="P1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc8" source="P3" target="T13">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc9" source="T17" target="P3">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc10" source="P4" target="T14">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc11" source="T16" target="P4">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc12" source="P5" target="T16">
+<inscription><value>Default,2</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc13" source="T16" target="P7">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc14" source="P7" target="T15">
+<inscription><value>Default,3</value><graphics/></inscription>
+<type value="inhibitor"/>
+</arc>
+<arc id="arc15" source="P6" target="T15">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc16" source="P6" target="T18">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc17" source="T18" target="P8">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc18" source="P8" target="T19">
+<inscription><value>Default,2</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc19" source="T15" target="P5">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc20" source="P1" target="T14">
+<inscription><value>Default,2</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc21" source="P7" target="T17">
+<inscription><value>Default,2</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc22" source="T17" target="P7">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc23" source="P6" target="T17">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc24" source="T10" target="P6">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc25" source="T11" target="P5">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc26" source="T14" target="P3">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc27" source="P3" target="T14">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc28" source="T12" target="P1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+</net>
+</pnml>
+

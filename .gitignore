@@ -1,0 +1,16 @@
+# Ignore entire folders
+node_modules/
+build/
+dist/
+.env/
+logs/
+
+# Ignore entire folders
+paper_a/
+paper_b/
+
+
+# Specific files
+secrets.txt
+config.production.js
+database.db

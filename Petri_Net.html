@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+
+<head>
+
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Petri Net Editor</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #1e1e1e;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    #everything {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      background: #fff;
+    }
+
+    /* ===== TITLE BAR ===== */
+    #titlebar {
+      display: flex;
+      align-items: center;
+      height: 32px;
+      padding: 0 12px;
+      background: #2c2c2c;
+      color: #ddd;
+      font-size: 12px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    #titlebar-name {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    #titlebar-app {
+      margin-left: auto;
+      color: #888;
+      font-size: 11px;
+    }
+
+    /* ===== MENU BAR ===== */
+    #menubar {
+      display: flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 4px;
+      background: #f2f2f2;
+      border-bottom: 1px solid #ddd;
+      font-size: 12.5px;
+      flex-shrink: 0;
+      gap: 0;
+    }
+
+    .menu-item {
+      position: relative;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      user-select: none;
+    }
+
+    .menu-item:hover {
+      background: #e0e0e0;
+    }
+
+    .menu-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 200px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      padding: 4px 0;
+    }
+
+    .menu-item:hover .menu-dropdown,
+    .menu-item.active .menu-dropdown {
+      display: block;
+    }
+
+    .menu-action {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 12.5px;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    .menu-action:hover {
+      background: #e8e8e8;
+    }
+
+    .menu-shortcut {
+      color: #999;
+      font-size: 11px;
+      margin-left: 20px;
+    }
+
+    .menu-sep {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 4px 8px;
+    }
+
+    /* ===== TOOLBAR ===== */
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #f9f9f9;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .toolbuttons {
+      font-size: 12.5px;
+      padding: 4px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #fff;
+      color: #222;
+      user-select: none;
+    }
+
+    .toolbuttons:hover {
+      background: #f0f0f0;
+    }
+
+    .toolbuttons:disabled {
+      opacity: 0.4;
+      cursor: default;
+      background: #fff;
+    }
+
+    .toolbuttons.active {
+      background: #e8e8e8;
+      color: #000;
+      border-color: #888;
+    }
+
+    #toolbardiv {
+      width: 1px;
+      height: 22px;
+      background: #ddd;
+      margin: 0 3px;
+      flex-shrink: 0;
+    }
+
+    #mode-labell {
+      font-size: 12px;
+      color: #888;
+      margin-left: auto;
+    }
+
+    /* ===== MAIN AREA ===== */
+    #main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #canvas-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #fafafa;
+      background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
+      background-size: 20px 20px;
+      cursor: grab;
+    }
+
+    #canvas-wrap.panning {
+      cursor: grabbing;
+    }
+
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ===== FLOATING PANEL ===== */
+    #panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 220px;
+      background: #fafafa;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 100;
+      max-height: calc(100% - 20px);
+    }
+
+    #panel-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 7px 14px;
+      background: #444;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    #panel-header:active {
+      cursor: grabbing;
+    }
+
+    #panel-toggle {
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    #panel-toggle:hover {
+      color: #fff;
+    }
+
+    #panel-body {
+      flex: 1;
+      overflow-y: auto;
+      transition: max-height 0.2s ease;
+    }
+
+    #panel.collapsed #panel-body {
+      max-height: 0;
+      padding: 12px 14px;
+      overflow: hidden;
+
+    }
+
+    #panel.expanded #panel-body {
+      padding: 12px 14px;
+    }
+
+    .empty {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .prop-label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 3px;
+      margin-top: 10px;
+    }
+
+    .prop-label:first-child {
+      margin-top: 0;
+    }
+
+    .prop-input {
+      width: 100%;
+      font-size: 13px;
+      padding: 5px 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      color: #222;
+      outline: none;
+    }
+
+    .prop-input:focus {
+      border-color: #888;
+    }
+
+    .prop-input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    .prop-input[type=number]::-webkit-inner-spin-button,
+    .prop-input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .prop-apply {
+      width: 100%;
+      margin-top: 12px;
+      padding: 6px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #f0f0f0;
+      color: #222;
+      cursor: pointer;
+    }
+
+    .prop-apply:hover {
+      background: #e0e0e0;
+    }
+
+    .prop-delete {
+      width: 100%;
+      margin-top: 6px;
+      padding: 6px;
+      font-size: 13px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      background: transparent;
+      color: #444;
+      cursor: pointer;
+    }
+
+    .prop-delete:hover {
+      background: #ebebeb;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .toggle-row span {
+      font-size: 12px;
+      color: #444;
+    }
+
+    .toggle {
+      position: relative;
+      width: 38px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle input:checked+.toggle-slider {
+      background: #555;
+    }
+
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle input:checked+.toggle-slider:before {
+      transform: translateX(16px);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 10px 0;
+    }
+
+    .disabled-warning {
+      font-size: 11px;
+      color: #666;
+      margin-top: 6px;
+      padding: 5px 7px;
+      background: #f0f0f0;
+      border-radius: 5px;
+      border-left: 3px solid #999;
+    }
+
+    /* ===== STATUS BAR ===== */
+    #statusbar {
+      display: flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 12px;
+      background: #2c2c2c;
+      color: #aaa;
+      font-size: 11px;
+      flex-shrink: 0;
+      gap: 16px;
+      border-top: 1px solid #444;
+    }
+
+    #statusbar-hint {
+      flex: 1;
+    }
+
+    #statusbar-info {
+      color: #777;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div id="everything">
+
+    <!-- TITLE BAR -->
+    <div id="titlebar">
+      <span id="titlebar-name">Untitled</span>
+      <span id="titlebar-app">Petri Net Editor &amp; Simulator</span>
+    </div>
+
+    <!-- MENU BAR -->
+    <div id="menubar">
+      <div class="menu-item">
+        &#128194; File
+        <div class="menu-dropdown">
+          <div class="menu-action" onclick="newModel()">&#128196; New <span class="menu-shortcut">Ctrl+N</span></div>
+          <div class="menu-action" onclick="document.getElementById('file-import').click()">&#128194; Open PNML (xml)... <span
+              class="menu-shortcut">Ctrl+O</span></div>
+          <div class="menu-sep"></div>
+          <div class="menu-action" onclick="saveModel()">&#128190; Save PNML (xml) <span class="menu-shortcut">Ctrl+S</span></div>
+          <div class="menu-action" onclick="saveModelAs()">&#128190; Save As PNML (xml)...</div>
+          <div class="menu-sep"></div>
+          <div class="menu-action" onclick="exportMaude()">&#128220; Export as Maude...</div>
+        </div>
+      </div>
+      <div class="menu-item">
+        &#128218; Examples
+        <div class="menu-dropdown" id="examples-menu">
+          <div class="menu-action" style="color:#999; cursor:default;">Loading...</div>
+        </div>
+      </div>
+      <div class="menu-item">
+        &#9881;&#xFE0F; View
+        <div class="menu-dropdown">
+          <div class="menu-action" onclick="zoomIn()">&#128269; Zoom In <span class="menu-shortcut">Ctrl++</span></div>
+          <div class="menu-action" onclick="zoomOut()">&#128270; Zoom Out <span class="menu-shortcut">Ctrl+-</span>
+          </div>
+          <div class="menu-sep"></div>
+          <div class="menu-action" onclick="togglePanel()">&#128204; Toggle Panel</div>
+        </div>
+      </div>
+      <div class="menu-item">
+        &#10068; Help
+        <div class="menu-dropdown" style="min-width:280px;">
+          <div class="menu-action" onclick="showHelp()" style="font-weight:600;">&#128214; Quick Start Guide</div>
+          <div class="menu-sep"></div>
+          <div class="menu-action" style="cursor:default;color:#666;">&#128432;&#xFE0F; Select &mdash; click to
+            select/move</div>
+          <div class="menu-action" style="cursor:default;color:#666;">&#9711; Place &mdash; click canvas to add</div>
+          <div class="menu-action" style="cursor:default;color:#666;">&#9647; Transition &mdash; click canvas to add
+          </div>
+          <div class="menu-action" style="cursor:default;color:#666;">&#8594; Arc &mdash; click source then target</div>
+          <div class="menu-sep"></div>
+          <div class="menu-action" style="cursor:default;color:#666;">Double-click arc to add bend point</div>
+          <div class="menu-action" style="cursor:default;color:#666;">Right-click bend point to remove</div>
+          <div class="menu-action" style="cursor:default;color:#666;">Click transition to fire (select mode)</div>
+          <div class="menu-action" style="cursor:default;color:#666;">Double-click node name to rename</div>
+          <div class="menu-sep"></div>
+          <div class="menu-action" style="cursor:default;color:#888;font-size:11px;">&#9679; Green dot = enabled
+            transition</div>
+          <div class="menu-action" style="cursor:default;color:#888;font-size:11px;">&#9675; Empty dot = disabled
+            transition</div>
+          <div class="menu-action" style="cursor:default;color:#888;font-size:11px;">&#128994; Green glow = tokens
+            received</div>
+          <div class="menu-action" style="cursor:default;color:#888;font-size:11px;">&#128992; Orange glow = tokens
+            consumed</div>
+        </div>
+      </div>
+      <input type="file" id="file-import" accept=".xml" style="display:none;" onchange="handleImport(event)">
+    </div>
+
+    <!-- TOOLBAR -->
+    <div id="toolbar">
+      <button class="toolbuttons active" id="btn-select" onclick="setMode('select')">&#128432;&#xFE0F; select</button>
+      <div id="toolbardiv"></div>
+
+      <button class="toolbuttons" id="btn-place" onclick="setMode('place')">&#9711; place</button>
+      <button class="toolbuttons" id="btn-trans" onclick="setMode('transition')">&#9647; transition</button>
+      <div id="toolbardiv"></div>
+
+      <button class="toolbuttons" id="btn-arc" onclick="setMode('arc')">&#8594; arc</button>
+      <div id="toolbardiv"></div>
+
+      <button class="toolbuttons" id="btn-play" onclick="simPlay()">&#9654;&#xFE0F; play</button>
+      <button class="toolbuttons" id="btn-pause" onclick="simPause()" disabled>&#9208;&#xFE0F; pause</button>
+      <button class="toolbuttons" onclick="simReset()">&#8635; reset</button>
+      <button class="toolbuttons" onclick="simStep()">&#9193;&#xFE0F; step</button>
+      <div id="toolbardiv"></div>
+
+      <button class="toolbuttons" onclick="deleteAll()">&#128465;&#xFE0F; clear all</button>
+      <div id="toolbardiv"></div>
+
+      <button class="toolbuttons" onclick="saveModel()">&#128190; save PNML (xml)</button>
+      <button class="toolbuttons" onclick="exportMaude()">&#128220; export to MAUDE</button>
+
+      <span id="mode-labell">mode: select</span>
+    </div>
+
+    <!-- MAIN -->
+    <div id="main">
+      <div id="canvas-wrap">
+        <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#555" />
+            </marker>
+            <marker id="arr-inh" markerWidth="9" markerHeight="9" refX="5" refY="3" orient="auto">
+              <circle cx="3" cy="3" r="2.5" fill="#fff" stroke="#555" stroke-width="1.5" />
+            </marker>
+            <marker id="arr-reset" markerWidth="11" markerHeight="9" refX="9" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L4,3 z M4,0 L4,6 L8,3 z" fill="#555" />
+            </marker>
+          </defs>
+          <g id="zoom-layer" transform="scale(1)">
+            <g id="arcs-layer"></g>
+            <g id="nodes-layer"></g>
+            <line id="arc-prev" stroke="#aaa" stroke-width="1.5" stroke-dasharray="5,3" display="none"
+              marker-end="url(#arr)" />
+          </g>
+        </svg>
+
+        <!-- FLOATING PANEL -->
+        <div id="panel">
+          <div id="panel-header">
+            <span>properties</span>
+            <button id="panel-toggle"
+              onclick="document.getElementById('panel').classList.toggle('collapsed')">&#9660;</button>
+          </div>
+          <div id="panel-body">
+            <p class="empty">select an element to edit</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div id="statusbar">
+      <span id="statusbar-hint">Ready. Select a tool to start building your Petri net.</span>
+      <span id="statusbar-info">Places: 0 | Transitions: 0 | Arcs: 0</span>
+    </div>
+
+  <script src="examples_data.js"></script>
+  <script src="petri_net.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+
+mod PETRI-NET is
+    protecting BOOL .
+    protecting INT .
+    including CONFIGURATION .
+
+    op PLACE : -> Cid . --- 'Cid' Class Id from CONFIGURATION Module
+    op N :_ : Int -> Attribute [gather(&)] . --- 'Attribute' from CONFIGURATION Module
+
+    ops P0 P1 P2 P3 : -> Oid .
+    ops T0 T1 T2 T3 T4 T5 : -> Oid .
+    op enable(_,_) : Oid Bool -> Msg .
+
+    op initial : -> Configuration .
+
+    vars x y z : Int .
+    var t : Bool .
+
+    eq initial = 
+        < P0 : PLACE | N : 1 > < P1 : PLACE | N : 2 > < P2 : PLACE | N : 0 > < P3 : PLACE | N : 4 > enable(T0,true) enable(T1,false) enable(T2,true) enable(T3,true) enable(T4,false) enable(T5,true) .
+
+    ceq[enable-T1] : 
+        < P0 : PLACE | N : x > enable(T1,false) = 
+        < P0 : PLACE | N : x > enable(T1,true) 
+        if (x >= 3) .
+    
+    ceq[enable-T2] :
+         < P1 : PLACE | N : x > enable(T2,false) = 
+         < P1 : PLACE | N : x > enable(T2,true) 
+         if (x >= 1) .
+
+    ceq[enable-T3] :
+         < P1 : PLACE | N : x > enable(T3,false) =
+          < P1 : PLACE | N : x > enable(T3,true) 
+          if (x >= 2) .
+
+    ceq[enable-T4] :
+        < P1 : PLACE | N : x > < P2 : PLACE | N : y > enable(T4,false) = 
+        < P1 : PLACE | N : x > < P2 : PLACE | N : y > enable(T4,true) 
+        if (x == 0 ) and (y >= 1) .
+
+    ceq[enable-T5] : 
+        < P3 : PLACE | N : x > enable(T5,false) = 
+        < P3 : PLACE | N : x > enable(T5,true) if (x >= 4) .
+    
+    rl[fire-T0] : 
+        < P0 : PLACE | N : x > enable(T0,true) => 
+        < P0 : PLACE | N : x + 1 > enable(T0,true) .
+
+    rl[fire-T1] : 
+        < P0 : PLACE | N : x > enable(T1,true) enable(T4,t) < P1 : PLACE | N : y > =>  
+        < P0 : PLACE | N : x - 3 > < P1 : PLACE | N : y + 1 > enable(T1,false) enable(T4,false).
+
+    rl[fire-T2] : 
+        < P1 : PLACE | N : x > < P2 : PLACE | N : y > enable(T2,true) enable(T3,t) => 
+        < P1 : PLACE | N : x - 1 > < P2 : PLACE | N : y + 1 > enable(T2,false)  enable(T3,false) .
+
+    rl[fire-T3] : 
+        < P1 : PLACE | N : x > < P3 : PLACE | N : y > enable(T3,true) enable(T2,t) => 
+        < P1 : PLACE | N : x - 2 > < P3 : PLACE | N : y + 1 > enable(T3,false) enable(T2,false) .
+
+    rl[fire-T4] : 
+        < P1 : PLACE | N : x > < P2 : PLACE | N : y > < P3 : PLACE | N : z > enable(T4,true) => 
+        < P1 : PLACE | N : x > < P2 : PLACE | N : y - 1 > < P3 : PLACE | N : z + 1 > enable(T4,false) .
+
+    rl[fire-T5] : 
+        < P3 : PLACE | N : x > enable(T5,true) => 
+        < P3 : PLACE | N : x - 4 > enable(T5,false) .
+
+endm
