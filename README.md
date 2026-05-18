@@ -16,8 +16,9 @@ This editor allows researchers and developers to visually design complex Petri N
 
 1. Select the **Place** or **Transition** tool from the toolbar and click on the canvas to place nodes.
 2. Select the **Arc** tool, then click the source node and target node to connect them.
-3. Switch to **Select** mode to interact, drag elements, manually fire transitions, or configure properties.
-4. Click **Play** or **Step** to run the simulator!
+3. Select the **Text** tool (📝) to add notes directly onto the canvas for model documentation.
+4. Switch to **Select** mode to interact, drag elements, edit properties (e.g. text content), or manually fire transitions.
+5. Click **Play** or **Step** to run the simulator!
 
 ---
 
@@ -25,10 +26,12 @@ This editor allows researchers and developers to visually design complex Petri N
 
 ### 1. Robust Visual Editor
 
-- **Vector Canvas with Pan & Zoom**: Seamlessly navigate large models. In `Select` mode, drag the empty canvas space to pan around, and use **Zoom In** / **Zoom Out** (via toolbar or `Ctrl +` / `Ctrl -`) to scale your design.
-- **Element Properties Panel**: Select any place, transition, or arc to configure properties such as names, initial markings, capacities, weights, and priorities.
+- **Multi-Tab Workspace**: Edit multiple Petri Net models simultaneously. Switch between tabs without losing your panning, zooming, or simulation progress.
+- **Vector Canvas with Pan & Zoom**: Seamlessly navigate large models. In `Select` mode, drag the empty canvas space to pan around, and use **Zoom In (+)** / **Zoom Out (-)** to scale your design.
+- **Element Properties Panel**: Select any place, transition, arc, or text note to configure properties such as names, initial markings, capacities, weights, priorities, and text content.
 - **Inline Editing**: Double-click on any place or transition name to rename it instantly.
 - **Drag-and-Drop Arc Routing**: Double-click on any arc to create a bend point. Drag the bend point to custom route arcs around elements. Right-click on a bend point to remove it, or use the properties panel to clear all points.
+- **Canvas Text Annotations**: Use the Text tool to write multi-line documentation directly on the canvas, which is perfectly preserved within the model file.
 
 ### 2. Multi-Type Arc Semantics
 
@@ -38,6 +41,7 @@ Design expressive modeling logic using four distinct arc types, fully supported 
 2. **Inhibitor Arcs** ($\circ$): Prevent a transition from firing if the connected place has tokens greater than or equal to the arc weight.
 3. **Read (Test) Arcs**: Require a minimum token count to enable a transition, but **do not consume** any tokens when it fires.
 4. **Reset Arcs** ($\gg$): Completely drain all tokens from a place (setting it to 0) upon transition firing, regardless of the marking.
+5. **Dynamic Drains**: Dynamically consume tokens equal to a variable mathematical expression $M(P) - threshold$. Bypasses runtime subtraction by simply hard-resetting the place tokens to the defined threshold weight.
 
 ### 3. Dynamic Simulation Engine
 
@@ -51,8 +55,9 @@ Design expressive modeling logic using four distinct arc types, fully supported 
 
 ### 4. Interoperability & Formal Verification
 
-- **Petri Net Markup Language (PNML)**: Save and load model structures in standard-compliant PNML (XML) files.
-- **Built-in Academic Examples**: Instantly load pre-configured models (e.g., Traffic Light controls, academic papers) directly from the `Examples` dropdown menu.
+- **Petri Net Markup Language (PNML)**: Save and load model structures in standard-compliant PNML (XML) files. Full support for standard `<labels>` export for text annotations.
+- **Native File System Saving**: Instead of repeatedly downloading multiple files (`model(1).xml`), the app uses the browser's modern File System Access API to directly overwrite your target local file when you click **Save (Ctrl+S)**.
+- **Built-in Academic Examples**: Instantly load pre-configured models directly from the `Examples` dropdown menu. (Update the list anytime by running `node build_examples.js` to automatically bundle new XML files in the `examples` folder).
 - **Formal Maude Compiler**: Instantly compile your graphical Petri Net into a mathematical Maude rewriting logic specification (`.maude`).
 
 ---

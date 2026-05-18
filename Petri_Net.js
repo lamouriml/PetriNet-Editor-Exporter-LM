@@ -205,7 +205,7 @@ function setMode(m) {
 
 
 
-  const map = { select: 'btn-select', place: 'btn-place', transition: 'btn-trans', arc: 'btn-arc', biarc: 'btn-biarc' };
+  const map = { select: 'btn-select', place: 'btn-place', transition: 'btn-trans', arc: 'btn-arc', text: 'btn-text' };
 
 
 
@@ -233,7 +233,9 @@ function svgEl(tag, attrs) {
 function nodeCenter(n) {
 
 
-  return n.type === 'place' ? { x: n.x, y: n.y } : { x: n.x + TW / 2, y: n.y + TH / 2 };
+  if (n.type === 'place') return { x: n.x, y: n.y };
+  if (n.type === 'text') return { x: n.x + 50, y: n.y + 20 };
+  return { x: n.x + TW / 2, y: n.y + TH / 2 };
 
 
 
@@ -770,6 +772,27 @@ function renderNodes() {
         capLbl.textContent = 'K=' + n.capacity; g.appendChild(capLbl);
       }
 
+    } else if (n.type === 'text') {
+      const textLines = (n.name || '').split('\n');
+      const boxW = Math.max(100, ...textLines.map(l => l.length * 7.5));
+      const boxH = Math.max(40, textLines.length * 16 + 20);
+      
+      const bg = svgEl('rect', {
+        x: n.x, y: n.y, width: boxW, height: boxH,
+        fill: isSel ? '#e0f0ff' : '#fffcf0',
+        stroke: isSel ? '#4a90d9' : '#d0c8a0',
+        'stroke-dasharray': '4,4', rx: 4
+      });
+      g.appendChild(bg);
+      
+      textLines.forEach((line, i) => {
+        const txt = svgEl('text', {
+          x: n.x + 8, y: n.y + 20 + i * 16,
+          fill: '#444', 'font-family': 'system-ui,sans-serif', 'font-size': '13px'
+        });
+        txt.textContent = line;
+        g.appendChild(txt);
+      });
     } else {
       const isEnabled = enabled.includes(id);
 
@@ -1002,6 +1025,14 @@ function showPanel(id) {
       <hr class="divider">
 
       <button class="prop-delete" onclick="deleteNode('${id}')">delete place</button>`;
+  } else if (n.type === 'text') {
+    body.innerHTML = `
+      <div class="prop-label">text content</div>
+      <textarea class="prop-input" id="txt-content" rows="6" style="resize:vertical;font-family:inherit;">${esc(n.name)}</textarea>
+      
+      <button class="prop-apply" onclick="applyText('${id}')">apply</button>
+      <hr class="divider">
+      <button class="prop-delete" onclick="deleteNode('${id}')">delete text</button>`;
   } else {
     const checked = n.fire ? 'checked' : '';
     const autoWarn = n._autoDisabled ? `<div class="disabled-warning">auto-disabled: not enough tokens in connected place</div>` : '';
@@ -1031,6 +1062,13 @@ function showPanel(id) {
 
 
 
+
+function applyText(id) {
+  const n = nodes[id];
+  const ta = document.getElementById('txt-content');
+  if (ta) n.name = ta.value || '';
+  render(); showPanel(id);
+}
 
 function applyPlace(id) {
   const n = nodes[id];
@@ -1174,6 +1212,10 @@ svg.addEventListener('click', e => {
 
     nodes[id] = { type: 'transition', name: 'T' + num, x: mx - TW / 2, y: my - TH / 2, fire: true, priority: 0 };
 
+    render();
+  } else if (mode === 'text') {
+    const id = uid('Txt');
+    nodes[id] = { type: 'text', name: 'Note', x: mx, y: my };
     render();
   } else if (mode === 'select') {
     selected = null;
@@ -1355,6 +1397,16 @@ function importPNML(xmlText) {
     nodes[id] = { type: 'transition', name, x, y, fire: true, priority };
   });
 
+  const xmlLabels = doc.querySelectorAll('labels');
+  xmlLabels.forEach(l => {
+    const id = uid('Txt');
+    const textEl = l.querySelector('text');
+    const text = textEl ? textEl.textContent : '';
+    const x = parseFloat(l.getAttribute('x')) || 0;
+    const y = parseFloat(l.getAttribute('y')) || 0;
+    nodes[id] = { type: 'text', name: text, x, y };
+  });
+
   const xmlArcs = doc.querySelectorAll('arc');
   xmlArcs.forEach(a => {
     const id = a.getAttribute('id');
@@ -1405,6 +1457,12 @@ function buildPNML() {
       xml += `<name><value>${esc(n.name)}</value><graphics><offset x="0.0" y="0.0"/></graphics></name>\n`;
       xml += `<priority><value>${n.priority || 0}</value></priority>\n`;
       xml += `</transition>\n`;
+    } else if (n.type === 'text') {
+      const w = Math.max(100, ...(n.name || '').split('\n').map(l => l.length * 7.5));
+      const h = Math.max(40, (n.name || '').split('\n').length * 16 + 20);
+      xml += `<labels x="${n.x}" y="${n.y}" width="${w}" height="${h}" border="true">\n`;
+      xml += `<text>${esc(n.name)}</text>\n`;
+      xml += `</labels>\n`;
     }
   }
   arcs.forEach((a, i) => {
