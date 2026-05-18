@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><pnml>
+<net id="Net-One" type="P/T net">
+<token id="Default" enabled="true" red="0" green="0" blue="0"/>
+<place id="P0">
+<graphics><position x="195" y="420"/></graphics>
+<name><value>P0</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,1</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P1">
+<graphics><position x="315" y="300"/></graphics>
+<name><value>P1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,2</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P2">
+<graphics><position x="597" y="237"/></graphics>
+<name><value>P2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="P3">
+<graphics><position x="605" y="367"/></graphics>
+<name><value>P3</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,4</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<transition id="T0">
+<graphics><position x="313" y="404"/></graphics>
+<name><value>T0</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="T1">
+<graphics><position x="163" y="274"/></graphics>
+<name><value>T1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="T2">
+<graphics><position x="405" y="225"/></graphics>
+<name><value>T2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="T3">
+<graphics><position x="405" y="345"/></graphics>
+<name><value>T3</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="T4">
+<graphics><position x="696" y="285"/></graphics>
+<name><value>T4</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="T5">
+<graphics><position x="571" y="439"/></graphics>
+<name><value>T5</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<arc id="arc0" source="P0" target="T1">
+<inscription><value>Default,3</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc1" source="P1" target="T2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc2" source="P1" target="T3">
+<inscription><value>Default,2</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc3" source="P1" target="T4">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="inhibitor"/>
+<graphics>
+<position x="420" y="173.44444274902344"/>
+<position x="651" y="196.44444274902344"/>
+</graphics>
+</arc>
+<arc id="arc4" source="P2" target="T4">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc5" source="P3" target="T5">
+<inscription><value>Default,4</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc6" source="T0" target="P0">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc7" source="T1" target="P1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc8" source="T2" target="P2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc9" source="T3" target="P3">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc10" source="T4" target="P3">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+</net>
+</pnml>

@@ -51,6 +51,128 @@ function zoomOut() {
 
 let initialTokens = {};
 
+let currentFileHandle = null;
+let tabs = [];
+let activeTabId = null;
+let tabCounter = 1;
+
+function createTab(name = null, contentStr = null, handle = null) {
+  const tid = 'tab-' + tabCounter++;
+  const newTab = {
+    id: tid,
+    name: name || 'Untitled',
+    nodes: {},
+    arcs: [],
+    idCtr: 0,
+    modelFileName: name || null,
+    currentFileHandle: handle,
+    panX: 0,
+    panY: 0,
+    zoomLevel: 1.0,
+    simTokens: {},
+    initialTokens: {}
+  };
+  tabs.push(newTab);
+  
+  switchTab(tid);
+  if (contentStr) {
+    importPNML(contentStr);
+  }
+}
+
+function switchTab(tid) {
+  if (activeTabId) {
+    const active = tabs.find(t => t.id === activeTabId);
+    if (active) {
+      active.nodes = nodes;
+      active.arcs = arcs;
+      active.idCtr = idCtr;
+      active.modelFileName = modelFileName;
+      active.currentFileHandle = currentFileHandle;
+      active.panX = panX;
+      active.panY = panY;
+      active.zoomLevel = zoomLevel;
+      active.simTokens = simTokens;
+      active.initialTokens = initialTokens;
+    }
+  }
+  
+  const target = tabs.find(t => t.id === tid);
+  if (target) {
+    activeTabId = tid;
+    nodes = target.nodes;
+    arcs = target.arcs;
+    idCtr = target.idCtr;
+    modelFileName = target.modelFileName;
+    currentFileHandle = target.currentFileHandle;
+    panX = target.panX;
+    panY = target.panY;
+    zoomLevel = target.zoomLevel;
+    simTokens = target.simTokens;
+    initialTokens = target.initialTokens;
+    
+    selected = null;
+    arcStart = null;
+    
+    applyTransform();
+    refreshAutoDisable();
+    render();
+    renderTabs();
+    updateTitleBar();
+    const pb = document.getElementById('panel-body');
+    if(pb) pb.innerHTML = '<p class="empty">select an element to edit</p>';
+  }
+}
+
+function closeTab(tid, e) {
+  if (e) e.stopPropagation();
+  if (tabs.length === 1) {
+    deleteAll();
+    return;
+  }
+  const idx = tabs.findIndex(t => t.id === tid);
+  if (idx === -1) return;
+  
+  tabs.splice(idx, 1);
+  if (activeTabId === tid) {
+    const nextTab = tabs[Math.max(0, idx - 1)];
+    activeTabId = null; 
+    switchTab(nextTab.id);
+  } else {
+    renderTabs();
+  }
+}
+
+function renderTabs() {
+  const tb = document.getElementById('tabsbar');
+  if (!tb) return;
+  tb.innerHTML = '';
+  tabs.forEach(t => {
+    const tName = (t.id === activeTabId && modelFileName) ? modelFileName : (t.modelFileName || 'Untitled');
+    const div = document.createElement('div');
+    div.className = 'tab ' + (t.id === activeTabId ? 'active' : '');
+    div.onclick = () => switchTab(t.id);
+    
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'tab-name';
+    nameSpan.textContent = tName;
+    div.appendChild(nameSpan);
+    
+    const closeSpan = document.createElement('span');
+    closeSpan.className = 'tab-close';
+    closeSpan.innerHTML = '&#10006;';
+    closeSpan.onclick = (e) => closeTab(t.id, e);
+    div.appendChild(closeSpan);
+    
+    tb.appendChild(div);
+  });
+  const addBtn = document.createElement('div');
+  addBtn.className = 'tab-add';
+  addBtn.innerHTML = '&#10133;';
+  addBtn.onclick = () => createTab();
+  tb.appendChild(addBtn);
+}
+
 function uid(p) { return p + (++idCtr); }
 
 
@@ -152,22 +274,27 @@ function getTransitionImpact(tid) {
   const produced = {};
   const requires = {};
   const forbids = {};
+  const dynamic = {};
   let hasInput = false;
 
   for (const arc of arcs.filter(a => a.to === tid)) {
     hasInput = true;
-    const w = arc.weight ?? 1;
+    const wNum = arc.weight ?? 1;
+
     if (arc.arcType === 'inhibitor') {
-      forbids[arc.from] = Math.min(forbids[arc.from] ?? Infinity, w);
+      forbids[arc.from] = Math.min(forbids[arc.from] ?? Infinity, wNum);
     } else if (arc.arcType === 'read') {
-      requires[arc.from] = Math.max(requires[arc.from] || 0, w);
+      requires[arc.from] = Math.max(requires[arc.from] || 0, wNum);
     } else if (arc.arcType === 'reset') {
       consumed[arc.from] = 'ALL';
+    } else if (arc.arcType === 'dynamic') {
+      dynamic[arc.from] = wNum;
+      requires[arc.from] = Math.max(requires[arc.from] || 0, wNum);
     } else {
       if (consumed[arc.from] !== 'ALL') {
-        consumed[arc.from] = (consumed[arc.from] || 0) + w;
+        consumed[arc.from] = (consumed[arc.from] || 0) + wNum;
       }
-      requires[arc.from] = Math.max(requires[arc.from] || 0, consumed[arc.from] === 'ALL' ? w : consumed[arc.from]);
+      requires[arc.from] = Math.max(requires[arc.from] || 0, consumed[arc.from] === 'ALL' ? wNum : consumed[arc.from]);
     }
   }
   for (const arc of arcs.filter(a => a.from === tid)) {
@@ -179,7 +306,7 @@ function getTransitionImpact(tid) {
       produced[other] = (produced[other] || 0) + (arc.weight ?? 1);
     }
   }
-  return { consumed, produced, requires, forbids, hasInput };
+  return { consumed, produced, requires, forbids, dynamic, hasInput };
 }
 
 function getEnabledTransitions() {
@@ -188,7 +315,7 @@ function getEnabledTransitions() {
     const t = nodes[id];
     if (t.type !== 'transition' || !t.fire) continue;
 
-    const { consumed, produced, requires, forbids, hasInput } = getTransitionImpact(id);
+    const { consumed, produced, requires, forbids, dynamic, hasInput } = getTransitionImpact(id);
 
     let ok = true;
     for (const pid in requires) {
@@ -198,11 +325,18 @@ function getEnabledTransitions() {
       if (liveTokens(pid) >= forbids[pid]) { ok = false; break; }
     }
     if (ok) {
-      const affected = new Set([...Object.keys(consumed), ...Object.keys(produced)]);
+      const affected = new Set([...Object.keys(consumed), ...Object.keys(produced), ...Object.keys(dynamic)]);
       for (const pid of affected) {
         const p = nodes[pid];
         if (p && p.capacity !== undefined && p.capacity !== null) {
-          const cAmt = consumed[pid] === 'ALL' ? liveTokens(pid) : (consumed[pid] || 0);
+          let cAmt = 0;
+          if (consumed[pid] === 'ALL') {
+             cAmt = liveTokens(pid);
+          } else if (dynamic[pid] !== undefined) {
+             cAmt = liveTokens(pid) - dynamic[pid];
+          } else {
+             cAmt = consumed[pid] || 0;
+          }
           if (liveTokens(pid) - cAmt + (produced[pid] || 0) > p.capacity) {
             ok = false; break;
           }
@@ -219,7 +353,7 @@ function refreshAutoDisable() {
     const t = nodes[id];
     if (t.type !== 'transition') continue;
 
-    const { consumed, produced, requires, forbids } = getTransitionImpact(id);
+    const { consumed, produced, requires, forbids, dynamic } = getTransitionImpact(id);
     let disabled = false;
     for (const pid in requires) {
       if (liveTokens(pid) < requires[pid]) { disabled = true; break; }
@@ -228,11 +362,18 @@ function refreshAutoDisable() {
       if (liveTokens(pid) >= forbids[pid]) { disabled = true; break; }
     }
     if (!disabled) {
-      const affected = new Set([...Object.keys(consumed), ...Object.keys(produced)]);
+      const affected = new Set([...Object.keys(consumed), ...Object.keys(produced), ...Object.keys(dynamic)]);
       for (const pid of affected) {
         const p = nodes[pid];
         if (p && p.capacity !== undefined && p.capacity !== null) {
-          const cAmt = consumed[pid] === 'ALL' ? liveTokens(pid) : (consumed[pid] || 0);
+          let cAmt = 0;
+          if (consumed[pid] === 'ALL') {
+             cAmt = liveTokens(pid);
+          } else if (dynamic[pid] !== undefined) {
+             cAmt = liveTokens(pid) - dynamic[pid];
+          } else {
+             cAmt = consumed[pid] || 0;
+          }
           if (liveTokens(pid) - cAmt + (produced[pid] || 0) > p.capacity) {
             disabled = true; break;
           }
@@ -270,6 +411,10 @@ function fireTransitions(toFire) {
       if (arc.arcType === 'reset') {
         if (liveTokens(arc.from) > 0) triggerGlow(arc.from, '#f97316');
         simTokens[arc.from] = 0;
+      } else if (arc.arcType === 'dynamic') {
+        const threshold = arc.weight ?? 1;
+        if (liveTokens(arc.from) > threshold) triggerGlow(arc.from, '#f97316');
+        simTokens[arc.from] = threshold;
       } else {
         triggerGlow(arc.from, '#f97316');
         simTokens[arc.from] = liveTokens(arc.from) - (arc.weight ?? 1);
@@ -530,8 +675,11 @@ function renderArcs() {
       layer.appendChild(back);
     }
 
-    const w = arc.weight ?? 1;
-    const bg = svgEl('rect', { x: textX - 7, y: textY - 9, width: 14, height: 14, fill: '#fff', rx: 3 });
+    let w = arc.weight ?? 1;
+    if (aType === 'dynamic') w = `M(${s.name}) - ${w}`;
+    const wStr = w.toString();
+    const wWidth = Math.max(14, wStr.length * 7 + 6);
+    const bg = svgEl('rect', { x: textX - wWidth/2, y: textY - 9, width: wWidth, height: 14, fill: '#fff', rx: 3 });
     const lbl = svgEl('text', { x: textX, y: textY + 3, 'text-anchor': 'middle', 'font-size': 12, fill: strokeCol, 'font-family': 'system-ui,sans-serif', 'font-weight': 'bold' });
     lbl.textContent = w;
     layer.appendChild(bg);
@@ -810,6 +958,7 @@ function showPanel(id) {
         <option value="inhibitor" ${arc.arcType === 'inhibitor' ? 'selected' : ''}>Inhibitor</option>
         <option value="read" ${arc.arcType === 'read' ? 'selected' : ''}>Read (Test)</option>
         <option value="reset" ${arc.arcType === 'reset' ? 'selected' : ''}>Reset</option>
+        <option value="dynamic" ${arc.arcType === 'dynamic' ? 'selected' : ''}>Dynamic Drain</option>
       </select>
     ` : '';
 
@@ -939,13 +1088,19 @@ function deleteNode(id) {
 
 
 function deleteAll() {
-
   if (!confirm('Delete everything from the canvas?')) return;
   simPause();
 
   nodes = {}; arcs = []; selected = null; arcStart = null; simTokens = {}; initialTokens = {};
   clearInlineRename();
-
+  modelFileName = null;
+  currentFileHandle = null;
+  panX = 0; panY = 0; zoomLevel = 1.0;
+  
+  applyTransform();
+  updateTitleBar();
+  renderTabs();
+  
   document.getElementById('panel-body').innerHTML = '<p class="empty">select an element to edit</p>';
   render();
 }
@@ -1136,6 +1291,9 @@ function makeDraggable(g, id) {
 
 setMode('select');
 
+// Initialize first tab
+createTab();
+
 function handleImport(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1215,7 +1373,13 @@ function importPNML(xmlText) {
     let arcType = 'normal';
     if (typeEl) arcType = typeEl.getAttribute('value') || 'normal';
 
-    arcs.push({ id: id || uid('A'), from: source, to: target, bidir: false, weight, arcType });
+    const posEls = a.querySelectorAll('graphics > position');
+    const points = Array.from(posEls).map(pe => ({
+      x: parseFloat(pe.getAttribute('x')),
+      y: parseFloat(pe.getAttribute('y'))
+    }));
+
+    arcs.push({ id: id || uid('A'), from: source, to: target, bidir: false, weight, arcType, points });
   });
 
   document.getElementById('panel-body').innerHTML = '<p class="empty">select an element to edit</p>';
@@ -1247,11 +1411,21 @@ function buildPNML() {
     xml += `<arc id="arc${i}" source="${esc(a.from)}" target="${esc(a.to)}">\n`;
     xml += `<inscription><value>Default,${a.weight || 1}</value><graphics/></inscription>\n`;
     xml += `<type value="${esc(a.arcType || 'normal')}"/>\n`;
+    if (a.points && a.points.length > 0) {
+      xml += `<graphics>\n`;
+      a.points.forEach(pt => xml += `<position x="${pt.x}" y="${pt.y}"/>\n`);
+      xml += `</graphics>\n`;
+    }
     xml += `</arc>\n`;
     if (a.bidir) {
       xml += `<arc id="arc${i}_back" source="${esc(a.to)}" target="${esc(a.from)}">\n`;
       xml += `<inscription><value>Default,${a.weight || 1}</value><graphics/></inscription>\n`;
       xml += `<type value="${esc(a.arcType || 'normal')}"/>\n`;
+      if (a.points && a.points.length > 0) {
+        xml += `<graphics>\n`;
+        a.points.forEach(pt => xml += `<position x="${pt.x}" y="${pt.y}"/>\n`);
+        xml += `</graphics>\n`;
+      }
       xml += `</arc>\n`;
     }
   });
@@ -1268,33 +1442,68 @@ function downloadFile(content, name, type) {
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-function saveModel() {
-  const xml = buildPNML();
-  if (modelFileName) {
-    downloadFile(xml, modelFileName + '.xml', 'text/xml');
-  } else {
-    saveModelAs();
+async function openModel() {
+  try {
+    if (window.showOpenFilePicker) {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'PNML File', accept: {'text/xml': ['.xml', '.pnml']} }]
+      });
+      const file = await handle.getFile();
+      const text = await file.text();
+      createTab(file.name.replace(/\.[^/.]+$/, ""), text, handle);
+    } else {
+      document.getElementById('file-import').click();
+    }
+  } catch (e) {
+    console.error(e);
   }
 }
 
-function saveModelAs() {
+async function saveModel() {
   const xml = buildPNML();
-  const name = prompt('Save as (file name):', modelFileName || 'model');
-  if (!name) return;
-  modelFileName = name.replace(/\.xml$/i, '');
-  updateTitleBar();
-  downloadFile(xml, modelFileName + '.xml', 'text/xml');
+  if (currentFileHandle) {
+    try {
+      const writable = await currentFileHandle.createWritable();
+      await writable.write(xml);
+      await writable.close();
+      return;
+    } catch (e) {
+      console.warn("Failed to save to handle, falling back", e);
+    }
+  }
+  await saveModelAs();
+}
+
+async function saveModelAs() {
+  const xml = buildPNML();
+  try {
+    if (window.showSaveFilePicker) {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: (modelFileName || 'model') + '.xml',
+        types: [{ description: 'PNML File', accept: {'text/xml': ['.xml', '.pnml']} }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(xml);
+      await writable.close();
+      currentFileHandle = handle;
+      modelFileName = handle.name.replace(/\.[^/.]+$/, "");
+      updateTitleBar();
+      renderTabs();
+    } else {
+      const name = prompt('Save as (file name):', modelFileName || 'model');
+      if (!name) return;
+      modelFileName = name.replace(/\.xml$/i, '');
+      updateTitleBar();
+      renderTabs();
+      downloadFile(xml, modelFileName + '.xml', 'text/xml');
+    }
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 function newModel() {
-  if (!confirm('Create a new empty model? Unsaved changes will be lost.')) return;
-  simPause();
-  nodes = {}; arcs = []; selected = null; arcStart = null; simTokens = {}; initialTokens = {};
-  clearInlineRename();
-  modelFileName = null;
-  updateTitleBar();
-  document.getElementById('panel-body').innerHTML = '<p class="empty">select an element to edit</p>';
-  render();
+  createTab();
 }
 
 function togglePanel() {
@@ -1304,6 +1513,27 @@ function togglePanel() {
 
 // Keep exportPNML as alias for backward compatibility
 function exportPNML() { saveModelAs(); }
+
+// Populate Examples Menu
+window.addEventListener('DOMContentLoaded', () => {
+  const exMenu = document.getElementById('examples-menu');
+  if (exMenu) {
+    if (typeof EXAMPLES !== 'undefined' && Object.keys(EXAMPLES).length > 0) {
+      exMenu.innerHTML = '';
+      for (const [name, content] of Object.entries(EXAMPLES)) {
+        const div = document.createElement('div');
+        div.className = 'menu-action';
+        div.innerHTML = `&#128196; ${esc(name)}`;
+        div.onclick = () => {
+          createTab(name, content);
+        };
+        exMenu.appendChild(div);
+      }
+    } else {
+      exMenu.innerHTML = '<div class="menu-action" style="color:#999; cursor:default;">No examples found</div>';
+    }
+  }
+});
 
 function exportMaude() {
   // Helper to get clean Maude-safe name
@@ -1450,6 +1680,7 @@ function exportMaude() {
     const firePlaces = new Set();
     for (const pid in impact.consumed) firePlaces.add(pid);
     for (const pid in impact.produced) firePlaces.add(pid);
+    for (const pid in impact.dynamic) firePlaces.add(pid);
     // Inhibitor-connected places appear in LHS but don't change
     for (const pid in impact.forbids) firePlaces.add(pid);
 
@@ -1465,6 +1696,7 @@ function exportMaude() {
       // Compute new token value
       const isInhibitorOnly = (impact.forbids[pid] !== undefined) &&
         (impact.consumed[pid] === undefined) &&
+        (impact.dynamic[pid] === undefined) &&
         (impact.produced[pid] === undefined);
 
       if (isInhibitorOnly) {
@@ -1472,6 +1704,13 @@ function exportMaude() {
         fireRhs += `< ${mName(pid)} | N : ${v} > `;
       } else if (impact.consumed[pid] === 'ALL') {
         fireRhs += `< ${mName(pid)} | N : 0 > `;
+      } else if (impact.dynamic[pid] !== undefined) {
+        const p = impact.produced[pid] || 0;
+        if (p > 0) {
+          fireRhs += `< ${mName(pid)} | N : ${impact.dynamic[pid]} + ${p} > `;
+        } else {
+          fireRhs += `< ${mName(pid)} | N : ${impact.dynamic[pid]} > `;
+        }
       } else {
         const c = impact.consumed[pid] || 0;
         const p = impact.produced[pid] || 0;

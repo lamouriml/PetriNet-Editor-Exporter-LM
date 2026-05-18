@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><pnml>
+<net id="Net-One" type="P/T net">
+<token id="Default" enabled="true" red="0" green="0" blue="0"/>
+<place id="G1">
+<graphics><position x="148" y="343"/></graphics>
+<name><value>G1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="G2">
+<graphics><position x="388" y="337"/></graphics>
+<name><value>G2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="O1">
+<graphics><position x="-20" y="450"/></graphics>
+<name><value>O1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="O2">
+<graphics><position x="594" y="442"/></graphics>
+<name><value>O2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="R1">
+<graphics><position x="148" y="132"/></graphics>
+<name><value>R1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,1</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="R2">
+<graphics><position x="409" y="125"/></graphics>
+<name><value>R2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,1</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="Switch to 1">
+<graphics><position x="346" y="27"/></graphics>
+<name><value>Switch to 1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,0</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<place id="Switch to 2">
+<graphics><position x="185" y="28"/></graphics>
+<name><value>Switch to 2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<initialMarking><value>Default,1</value><graphics><offset x="0.0" y="0.0"/></graphics></initialMarking>
+<capacity><value>0</value></capacity>
+</place>
+<transition id="GO 1">
+<graphics><position x="119" y="430"/></graphics>
+<name><value>GO 1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="GO 2">
+<graphics><position x="360" y="422"/></graphics>
+<name><value>GO 2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="OR 1 - S">
+<graphics><position x="-57" y="111"/></graphics>
+<name><value>OR 1 - S</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="OR 2 - S">
+<graphics><position x="564" y="104"/></graphics>
+<name><value>OR 2 - S</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="RG 1">
+<graphics><position x="159" y="211"/></graphics>
+<name><value>RG 1</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<transition id="RG 2">
+<graphics><position x="357" y="202"/></graphics>
+<name><value>RG 2</value><graphics><offset x="0.0" y="0.0"/></graphics></name>
+<priority><value>1</value></priority>
+</transition>
+<arc id="arc0" source="G1" target="GO 1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc1" source="G2" target="GO 2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc2" source="GO 1" target="O1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc3" source="GO 2" target="O2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc4" source="O1" target="OR 1 - S">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc5" source="O2" target="OR 2 - S">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc6" source="OR 1 - S" target="R1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc7" source="OR 1 - S" target="Switch to 2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc8" source="OR 2 - S" target="R2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc9" source="OR 2 - S" target="Switch to 1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc10" source="R1" target="RG 1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc11" source="R2" target="RG 2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc12" source="RG 1" target="G1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc13" source="RG 2" target="G2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc14" source="Switch to 1" target="RG 1">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+<arc id="arc15" source="Switch to 2" target="RG 2">
+<inscription><value>Default,1</value><graphics/></inscription>
+<type value="normal"/>
+</arc>
+</net>
+</pnml>

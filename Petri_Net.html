@@ -178,6 +178,67 @@
       flex-shrink: 0;
     }
 
+    /* ===== TABS BAR ===== */
+    #tabsbar {
+      display: flex;
+      background: #e0e0e0;
+      height: 28px;
+      padding-top: 4px;
+      padding-left: 8px;
+      gap: 2px;
+      flex-shrink: 0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      font-size: 12px;
+      cursor: pointer;
+      color: #555;
+      max-width: 150px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .tab.active {
+      background: #fff;
+      color: #000;
+      margin-bottom: -1px;
+      border-bottom: 1px solid #fff;
+    }
+
+    .tab-close {
+      margin-left: 8px;
+      font-size: 10px;
+      color: #999;
+    }
+
+    .tab-close:hover {
+      color: #d00;
+    }
+
+    .tab-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #666;
+    }
+
+    .tab-add:hover {
+      color: #000;
+    }
+
     #mode-labell {
       font-size: 12px;
       color: #888;
@@ -472,8 +533,7 @@
         &#128194; File
         <div class="menu-dropdown">
           <div class="menu-action" onclick="newModel()">&#128196; New <span class="menu-shortcut">Ctrl+N</span></div>
-          <div class="menu-action" onclick="document.getElementById('file-import').click()">&#128194; Open PNML (xml)... <span
-              class="menu-shortcut">Ctrl+O</span></div>
+          <div class="menu-action" onclick="openModel()">&#128194; Open PNML (xml)... <span class="menu-shortcut">Ctrl+O</span></div>
           <div class="menu-sep"></div>
           <div class="menu-action" onclick="saveModel()">&#128190; Save PNML (xml) <span class="menu-shortcut">Ctrl+S</span></div>
           <div class="menu-action" onclick="saveModelAs()">&#128190; Save As PNML (xml)...</div>
@@ -527,6 +587,9 @@
       <input type="file" id="file-import" accept=".xml" style="display:none;" onchange="handleImport(event)">
     </div>
 
+    <!-- TABS BAR -->
+    <div id="tabsbar"></div>
+
     <!-- TOOLBAR -->
     <div id="toolbar">
       <button class="toolbuttons active" id="btn-select" onclick="setMode('select')">&#128432;&#xFE0F; select</button>
@@ -546,6 +609,10 @@
       <div id="toolbardiv"></div>
 
       <button class="toolbuttons" onclick="deleteAll()">&#128465;&#xFE0F; clear all</button>
+      <div id="toolbardiv"></div>
+
+      <button class="toolbuttons" onclick="zoomIn()" title="Zoom In">&#10133; zoom</button>
+      <button class="toolbuttons" onclick="zoomOut()" title="Zoom Out">&#10134; zoom</button>
       <div id="toolbardiv"></div>
 
       <button class="toolbuttons" onclick="saveModel()">&#128190; save PNML (xml)</button>
