@@ -8,6 +8,10 @@ This editor allows researchers and developers to visually design complex Petri N
 
 ---
 
+![Petri Net Editor & Simulator Snapshot](examples/snapshot_of_the_tool.png)
+
+---
+
 ## The Web App link
 
 -   [petrinet-editor.netlify.app/](https://petrinet-editor.netlify.app/)

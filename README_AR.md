@@ -8,6 +8,10 @@
 
 ---
 
+![لقطة شاشة لأداة محرر ومحاكي شبكة بتري](examples/snapshot_of_the_tool.png)
+
+---
+
 ## إصدارات تطبيق الويب
 
 - الإصدار الأول (v1): [petrinet-editor.netlify.app/](https://petrinet-editor.netlify.app/)
