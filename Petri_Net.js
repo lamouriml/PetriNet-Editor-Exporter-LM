@@ -989,7 +989,7 @@ function showPanel(id) {
         <option value="inhibitor" ${arc.arcType === 'inhibitor' ? 'selected' : ''}>Inhibitor</option>
         <option value="read" ${arc.arcType === 'read' ? 'selected' : ''}>Read (Test)</option>
         <option value="reset" ${arc.arcType === 'reset' ? 'selected' : ''}>Reset</option>
-        <option value="dynamic" ${arc.arcType === 'dynamic' ? 'selected' : ''}>Dynamic Drain</option>
+        <option value="dynamic" ${arc.arcType === 'dynamic' ? 'selected' : ''}>Dynamic Arc Weight</option>
       </select>
     ` : '';
 
@@ -1628,42 +1628,76 @@ function exportMaude() {
     return !arcs.some(a => a.to === tid);
   }
 
-  // Detect structural conflicts: transitions sharing input places (normal arcs only)
-  function getConflictingTransitions(tid) {
-    const myInputPlaces = new Set();
-    arcs.forEach(a => {
-      if (a.to === tid && (a.arcType || 'normal') === 'normal') {
-        myInputPlaces.add(a.from);
+  // Identify all transitions whose enabling status must be reset to false when tid fires
+  function getTransitionsToReset(tid) {
+    const toReset = new Set();
+    const impactI = getTransitionImpact(tid);
+
+    // Identify places modified by tid (T_i)
+    const decreasedPlaces = new Set();
+    const increasedPlaces = new Set();
+
+    for (const pid in impactI.consumed) {
+      decreasedPlaces.add(pid);
+    }
+    for (const pid in impactI.dynamic) {
+      decreasedPlaces.add(pid);
+    }
+    for (const pid in impactI.produced) {
+      if (impactI.produced[pid] > 0) {
+        increasedPlaces.add(pid);
+      }
+    }
+
+    // Now, check net changes if a place is in both
+    const netChanges = {};
+    const allInvolved = new Set([...decreasedPlaces, ...increasedPlaces]);
+    allInvolved.forEach(pid => {
+      if (impactI.dynamic[pid] !== undefined || impactI.consumed[pid] === 'ALL') {
+        netChanges[pid] = 'altered'; // variable consumption
+      } else {
+        const cons = impactI.consumed[pid] || 0;
+        const prod = impactI.produced[pid] || 0;
+        const diff = prod - cons;
+        if (diff < 0) netChanges[pid] = 'decreased';
+        else if (diff > 0) netChanges[pid] = 'increased';
+        else if (diff === 0 && (cons > 0 || prod > 0)) netChanges[pid] = 'altered'; // Net zero but active
       }
     });
-    const conflicting = new Set();
+
     transIds.forEach(otherTid => {
       if (otherTid === tid) return;
-      arcs.forEach(a => {
-        if (a.to === otherTid && (a.arcType || 'normal') === 'normal' && myInputPlaces.has(a.from)) {
-          conflicting.add(otherTid);
-        }
-      });
-    });
-    return conflicting;
-  }
+      const impactJ = getTransitionImpact(otherTid);
 
-  // Detect transitions whose firing produces tokens into a place connected
-  // to tid via inhibitor arc (firing such transitions could disable tid)
-  function getInhibitorAffectedBy(tid) {
-    // Find all output places of tid
-    const outputPlaces = new Set();
-    arcs.forEach(a => {
-      if (a.from === tid) outputPlaces.add(a.to);
-    });
-    // Find transitions that have inhibitor arcs from those output places
-    const affected = new Set();
-    arcs.forEach(a => {
-      if ((a.arcType || 'normal') === 'inhibitor' && outputPlaces.has(a.from)) {
-        affected.add(a.to); // the transition connected via inhibitor
+      for (const pid in netChanges) {
+        const change = netChanges[pid];
+        if (!change) continue;
+
+        const hasNormal = impactJ.consumed[pid] !== undefined && impactJ.consumed[pid] !== 'ALL';
+        const hasRead = impactJ.requires[pid] !== undefined && impactJ.consumed[pid] === undefined && impactJ.dynamic[pid] === undefined;
+        const hasInhibitor = impactJ.forbids[pid] !== undefined;
+        const hasReset = impactJ.consumed[pid] === 'ALL';
+        const hasDynamic = impactJ.dynamic[pid] !== undefined;
+
+        // Rule 1 & 3: Normal/Read transitions are reset if token count decreases or is altered
+        if ((hasNormal || hasRead) && (change === 'decreased' || change === 'altered')) {
+          toReset.add(otherTid);
+        }
+
+        // Rule 2: Inhibitor transitions are reset if token count increases or is altered
+        // Also reset by Reset arc (which sets place to 0, satisfying inhibitor)
+        if (hasInhibitor && (change === 'increased' || change === 'altered' || impactI.consumed[pid] === 'ALL')) {
+          toReset.add(otherTid);
+        }
+
+        // Rule 5: Dynamic transitions are reset if token count is altered in any way
+        if (hasDynamic && (change === 'decreased' || change === 'increased' || change === 'altered')) {
+          toReset.add(otherTid);
+        }
       }
     });
-    return affected;
+
+    return toReset;
   }
 
   // NOTE: All transitions start as enable(Ti,false) in the initial configuration.
@@ -1704,8 +1738,7 @@ function exportMaude() {
     const tN = mName(tid);
     const impact = getTransitionImpact(tid);
     const isSource = isSourceTransition(tid);
-    const conflicts = getConflictingTransitions(tid);
-    const inhAffected = getInhibitorAffectedBy(tid);
+    const allToDisable = getTransitionsToReset(tid);
 
     // --- Enabling equation (skip for source transitions) ---
     if (!isSource) {
@@ -1806,7 +1839,6 @@ function exportMaude() {
 
     // Conflict messages: add enabled(Tj, state-tj) to LHS and enabled(Tj, false) to RHS
     let conflictLhs = '', conflictRhs = '';
-    const allToDisable = new Set([...conflicts, ...inhAffected]);
     allToDisable.forEach(cTid => {
       conflictLhs += `enabled(${mName(cTid)},state-${mName(cTid).toLowerCase()}) `;
       conflictRhs += `enabled(${mName(cTid)},false) `;

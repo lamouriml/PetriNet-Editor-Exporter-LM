@@ -43,7 +43,7 @@ Design expressive modeling logic using four distinct arc types, fully supported 
 2. **Inhibitor Arcs** ($\circ$): Prevent a transition from firing if the connected place has tokens greater than or equal to the arc weight.
 3. **Read (Test) Arcs**: Require a minimum token count to enable a transition, but **do not consume** any tokens when it fires.
 4. **Reset Arcs** ($\gg$): Completely drain all tokens from a place (setting it to 0) upon transition firing, regardless of the marking.
-5. **Dynamic Drains**: Dynamically consume tokens equal to a variable mathematical expression $M(P) - threshold$. Bypasses runtime subtraction by simply hard-resetting the place tokens to the defined threshold weight.
+5. **Dynamic Arc Weights**: Dynamically consume tokens equal to a variable mathematical expression $M(P) - threshold$. Bypasses runtime subtraction by simply hard-resetting the place tokens to the defined threshold weight.
 
 ### 3. Dynamic Simulation Engine
 
