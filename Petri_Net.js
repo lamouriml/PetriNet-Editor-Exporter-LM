@@ -321,7 +321,11 @@ function getEnabledTransitions() {
 
     let ok = true;
     for (const pid in requires) {
-      if (liveTokens(pid) < requires[pid]) { ok = false; break; }
+      if (dynamic[pid] !== undefined) {
+        if (liveTokens(pid) <= requires[pid]) { ok = false; break; }
+      } else {
+        if (liveTokens(pid) < requires[pid]) { ok = false; break; }
+      }
     }
     for (const pid in forbids) {
       if (liveTokens(pid) >= forbids[pid]) { ok = false; break; }
@@ -358,7 +362,11 @@ function refreshAutoDisable() {
     const { consumed, produced, requires, forbids, dynamic } = getTransitionImpact(id);
     let disabled = false;
     for (const pid in requires) {
-      if (liveTokens(pid) < requires[pid]) { disabled = true; break; }
+      if (dynamic[pid] !== undefined) {
+        if (liveTokens(pid) <= requires[pid]) { disabled = true; break; }
+      } else {
+        if (liveTokens(pid) < requires[pid]) { disabled = true; break; }
+      }
     }
     for (const pid in forbids) {
       if (liveTokens(pid) >= forbids[pid]) { disabled = true; break; }
@@ -1289,21 +1297,32 @@ document.addEventListener('mouseup', e => {
   }
   if (draggingNode && !dragMoved && mode === 'select' && nodes[draggingNode].type === 'transition') {
     const tid = draggingNode;
-    const { consumed, produced, requires, forbids } = getTransitionImpact(tid);
+    const { consumed, produced, requires, forbids, dynamic } = getTransitionImpact(tid);
 
     let canFire = true;
     for (const pid in requires) {
-      if (liveTokens(pid) < requires[pid]) { canFire = false; break; }
+      if (dynamic[pid] !== undefined) {
+        if (liveTokens(pid) <= requires[pid]) { canFire = false; break; }
+      } else {
+        if (liveTokens(pid) < requires[pid]) { canFire = false; break; }
+      }
     }
     for (const pid in forbids) {
       if (liveTokens(pid) >= forbids[pid]) { canFire = false; break; }
     }
     if (canFire) {
-      const affected = new Set([...Object.keys(consumed), ...Object.keys(produced)]);
+      const affected = new Set([...Object.keys(consumed), ...Object.keys(produced), ...Object.keys(dynamic)]);
       for (const pid of affected) {
         const p = nodes[pid];
         if (p && p.capacity !== undefined && p.capacity !== null) {
-          const cAmt = consumed[pid] === 'ALL' ? liveTokens(pid) : (consumed[pid] || 0);
+          let cAmt = 0;
+          if (consumed[pid] === 'ALL') {
+            cAmt = liveTokens(pid);
+          } else if (dynamic[pid] !== undefined) {
+            cAmt = liveTokens(pid) - dynamic[pid];
+          } else {
+            cAmt = consumed[pid] || 0;
+          }
           if (liveTokens(pid) - cAmt + (produced[pid] || 0) > p.capacity) {
             canFire = false; break;
           }
@@ -1696,14 +1715,18 @@ function exportMaude() {
 
       let lhsPlaces = '', rhsPlaces = '', conditions = [];
 
-      // Normal/read arcs -> requires
+      // Normal/read/dynamic arcs -> requires
       for (const pid in impact.requires) {
         const v = String.fromCharCode(120 + varIdx); // x, y, z...
         varIdx++;
         pVarMap[pid] = v;
         lhsPlaces += `< ${mName(pid)} | N : ${v} > `;
         rhsPlaces += `< ${mName(pid)} | N : ${v} > `;
-        conditions.push(`(${v} >= ${impact.requires[pid]})`);
+        if (impact.dynamic[pid] !== undefined) {
+          conditions.push(`(${v} > ${impact.requires[pid]})`);
+        } else {
+          conditions.push(`(${v} >= ${impact.requires[pid]})`);
+        }
       }
 
       // Inhibitor arcs -> forbids
