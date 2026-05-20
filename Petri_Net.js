@@ -1738,7 +1738,7 @@ function exportMaude() {
           lhsPlaces += `< ${mName(pid)} | N : ${v} > `;
           rhsPlaces += `< ${mName(pid)} | N : ${v} > `;
         }
-        conditions.push(`(${pVarMap[pid]} == 0 )`);
+        conditions.push(`(${pVarMap[pid]} < ${impact.forbids[pid]})`);
       }
 
       if (conditions.length > 0) {
