@@ -103,3 +103,12 @@ search initial =>* < P3 | N : x > C:Configuration when x > 5 .
 
 > [!TIP]
 > Use the **Double-click Arc** feature in `Select` mode to cleanly direct arrows around nodes, producing visually appealing diagrams for papers or presentations.
+
+---
+
+## 🛠️ Technical Documentation
+
+For detailed insights into the visual engine coordinate mapping, K-capacity rules, multi-type arc semantics, and the exact Maude compiler two-phase protocol logic, read the:
+- [TECHNICAL_SPECS.md](TECHNICAL_SPECS.md) (English)
+- [TECHNICAL_SPECS_AR.md](TECHNICAL_SPECS_AR.md) (Arabic)
+

@@ -1,8 +1,3 @@
---- this example is in figure-a in the new paper with modification (not test in MAUDE)
-
-
-
-
 mod PETRI-NET is
     protecting BOOL .
     protecting INT .
@@ -12,19 +7,18 @@ mod PETRI-NET is
     subsort Tid < Oid .
     subsort Attribute < AttributeSet .
 
-   
-    op N :_ : Int -> Attribute [ ctor gather (&) ]. --- 'Attribute' from CONFIGURATION Module
+    op N :_ : Int -> Attribute [ ctor gather (&) ] . --- 'Attribute' from CONFIGURATION Module
     op <_ | _> : Oid AttributeSet -> Object [ ctor ] .
 
     ops P1 P2 P3 P4 P5 P6 P7 P8 P0 : -> Oid .
     ops T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T0 : -> Tid .
-    
-    op enabled(_,_) : Tid Bool -> Msg [ ctor ]  . --- enabling message for transitions
+    op enabled(_,_) : Tid Bool -> Msg [ ctor ] .
 
     op initial : -> Configuration .
-        
+
     vars x y z : Int .
     var t : Bool .
+    vars state-t1 state-t2 state-t3 state-t4 state-t5 state-t6 state-t7 state-t8 state-t9 state-t10 state-t0 : Bool .
 
     eq initial = 
         < P1 | N : 0 > < P2 | N : 0 > < P3 | N : 1 > < P4 | N : 1 > < P5 | N : 0 > < P6 | N : 2 > < P7 | N : 1 > < P8 | N : 0 > < P0 | N : 4 > enabled(T1,false) enabled(T2,false) enabled(T3,false) enabled(T4,false) enabled(T5,false) enabled(T6,false) enabled(T7,false) enabled(T8,false) enabled(T9,false) enabled(T10,false) enabled(T0,true) .
@@ -35,8 +29,8 @@ mod PETRI-NET is
         if (x >= 2) .
 
     rl[FI-T1] : 
-        < P0 | N : x > < P1 | N : y > < P6 | N : z > enabled(T1,true) enabled(T2,t) enabled(T3,t) => 
-        < P0 | N : x - 2 > < P1 | N : y + 1 > < P6 | N : z + 1 > enabled(T1,false) enabled(T2,false) enabled(T3,false) .
+        < P0 | N : x > < P1 | N : y > < P6 | N : z > enabled(T1,true) enabled(T2,state-t2) enabled(T3,state-t3) enabled(T9,state-t9) => 
+        < P0 | N : x - 2 > < P1 | N : y + 1 > < P6 | N : z + 1 > enabled(T1,false) enabled(T2,false) enabled(T3,false) enabled(T9,false) .
 
     ceq[EN-T2] :
         < P0 | N : x > enabled(T2,false) = 
@@ -44,17 +38,17 @@ mod PETRI-NET is
         if (x >= 3) .
 
     rl[FI-T2] : 
-        < P0 | N : x > < P2 | N : y > < P5 | N : z > enabled(T2,true) enabled(T1,t) enabled(T3,t) => 
+        < P0 | N : x > < P2 | N : y > < P5 | N : z > enabled(T2,true) enabled(T1,state-t1) enabled(T3,state-t3) => 
         < P0 | N : x - 3 > < P2 | N : y + 1 > < P5 | N : z + 1 > enabled(T2,false) enabled(T1,false) enabled(T3,false) .
 
     ceq[EN-T3] :
         < P2 | N : x > < P0 | N : y > enabled(T3,false) = 
         < P2 | N : x > < P0 | N : y > enabled(T3,true) 
-        if (x >= 1) and (y >= 1) .
+        if (x >= 1) and (y > 2) .
 
     rl[FI-T3] : 
-        < P2 | N : x > < P0 | N : y > < P1 | N : z > enabled(T3,true) enabled(T1,t) enabled(T2,t) => 
-        < P2 | N : x - 1 > < P0 | N : y - 1 > < P1 | N : z + 1 > enabled(T3,false) enabled(T1,false) enabled(T2,false) .
+        < P2 | N : x > < P1 | N : y > < P0 | N : z > enabled(T3,true) enabled(T1,state-t1) enabled(T2,state-t2) => 
+        < P2 | N : x - 1 > < P1 | N : y + 1 > < P0 | N : 2 > enabled(T3,false) enabled(T1,false) enabled(T2,false) .
 
     ceq[EN-T4] :
         < P3 | N : x > enabled(T4,false) = 
@@ -62,7 +56,7 @@ mod PETRI-NET is
         if (x >= 1) .
 
     rl[FI-T4] : 
-        < P3 | N : x > < P1 | N : y > enabled(T4,true) enabled(T5,t) => 
+        < P3 | N : x > < P1 | N : y > enabled(T4,true) enabled(T5,state-t5) => 
         < P3 | N : x - 1 > < P1 | N : y + 1 > enabled(T4,false) enabled(T5,false) .
 
     ceq[EN-T5] :
@@ -71,16 +65,16 @@ mod PETRI-NET is
         if (x >= 1) and (y >= 2) and (z >= 1) .
 
     rl[FI-T5] : 
-        < P4 | N : x > < P1 | N : y > < P3 | N : z > enabled(T5,true) enabled(T4,t) => 
+        < P4 | N : x > < P1 | N : y > < P3 | N : z > enabled(T5,true) enabled(T4,state-t4) => 
         < P4 | N : x - 1 > < P1 | N : y - 2 > < P3 | N : z > enabled(T5,false) enabled(T4,false) .
 
     ceq[EN-T6] :
         < P6 | N : x > < P7 | N : y > enabled(T6,false) = 
         < P6 | N : x > < P7 | N : y > enabled(T6,true) 
-        if (x >= 1) and (y == 0 ) .
+        if (x >= 1) and (y < 3) .
 
     rl[FI-T6] : 
-        < P6 | N : x > < P5 | N : y > < P7 | N : z > enabled(T6,true) enabled(T8,t) enabled(T9,t) => 
+        < P6 | N : x > < P5 | N : y > < P7 | N : z > enabled(T6,true) enabled(T8,state-t8) enabled(T9,state-t9) => 
         < P6 | N : x - 1 > < P5 | N : y + 1 > < P7 | N : z > enabled(T6,false) enabled(T8,false) enabled(T9,false) .
 
     ceq[EN-T7] :
@@ -89,7 +83,7 @@ mod PETRI-NET is
         if (x >= 2) .
 
     rl[FI-T7] : 
-        < P5 | N : x > < P4 | N : y > < P7 | N : z > enabled(T7,true) enabled(T6,t) => 
+        < P5 | N : x > < P4 | N : y > < P7 | N : z > enabled(T7,true) enabled(T6,state-t6) => 
         < P5 | N : x - 2 > < P4 | N : y + 1 > < P7 | N : z + 1 > enabled(T7,false) enabled(T6,false) .
 
     ceq[EN-T8] :
@@ -98,17 +92,17 @@ mod PETRI-NET is
         if (x >= 2) and (y >= 1) .
 
     rl[FI-T8] : 
-        < P7 | N : x > < P6 | N : y > < P3 | N : z > enabled(T8,true) enabled(T6,t) enabled(T9,t) => 
+        < P7 | N : x > < P6 | N : y > < P3 | N : z > enabled(T8,true) enabled(T6,state-t6) enabled(T9,state-t9) => 
         < P7 | N : x - 1 > < P6 | N : y - 1 > < P3 | N : z + 1 > enabled(T8,false) enabled(T6,false) enabled(T9,false) .
 
     ceq[EN-T9] :
         < P6 | N : x > enabled(T9,false) = 
         < P6 | N : x > enabled(T9,true) 
-        if (x >= 1) .
+        if (x > 3) .
 
     rl[FI-T9] : 
-        < P6 | N : x > < P8 | N : y > enabled(T9,true) enabled(T6,t) enabled(T8,t) => 
-        < P6 | N : x - 1 > < P8 | N : y + 1 > enabled(T9,false) enabled(T6,false) enabled(T8,false) .
+        < P8 | N : x > < P6 | N : y > enabled(T9,true) enabled(T6,state-t6) enabled(T8,state-t8) => 
+        < P8 | N : x + 1 > < P6 | N : 3 > enabled(T9,false) enabled(T6,false) enabled(T8,false) .
 
     ceq[EN-T10] :
         < P8 | N : x > enabled(T10,false) = 
@@ -120,8 +114,8 @@ mod PETRI-NET is
         < P8 | N : x - 2 > enabled(T10,false) .
 
     rl[FI-T0] : 
-        < P0 | N : x > enabled(T0,true) => 
-        < P0 | N : x + 1 > enabled(T0,true) .
+        < P0 | N : x > enabled(T0,true) enabled(T3,state-t3) => 
+        < P0 | N : x + 1 > enabled(T0,true) enabled(T3,false) .
 
 endm
 
@@ -132,9 +126,7 @@ endm
 
 --- Start Maude and load this file:
 ---   ./maude.linux64
----   load  files/2026_files/PN-new1-bouchriet-a.maude .
---- load /home/vboxuser02/Desktop/Maude/maude-3.1/files/2026_files/PN-new1-bouchriet-a.maude .
-
+---   load model.maude .
 
 --- Show the module to verify it is loaded correctly:
 ---   show module PETRI-NET .
@@ -151,11 +143,9 @@ endm
 --- Search all reachable configurations from initial:
 ---   search initial =>* C:Configuration .
 
---- Search reachable configurations within 10 steps:
----   search [10] initial =>* C:Configuration .
+--- Search reachable configurations within 4 steps:
+---   search [4] initial =>* C:Configuration .
 
 --- Show the complete path from initial to a specific state (e.g., state 7):
 ---   show path 7 .
-
---- set trace on .
 
