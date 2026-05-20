@@ -1686,8 +1686,7 @@ function exportMaude() {
   if (transIds.length > 0) maude += `    ops ${transIds.map(mName).join(' ')} : -> Tid .\n`;
   maude += `    op enabled(_,_) : Tid Bool -> Msg [ ctor ] .\n\n`;
   maude += `    op initial : -> Configuration .\n\n`;
-  maude += `    vars x y z : Int .\n`;
-  maude += `    var t : Bool .\n\n`;
+  maude += `    vars x y z : Int .\n    var t : Bool .\n    vars ${transIds.map(tid => 'state-' + mName(tid).toLowerCase()).join(' ')} : Bool .\n\n`;
 
   // Initial configuration
   maude += `    eq initial = \n        `;
@@ -1805,11 +1804,11 @@ function exportMaude() {
     // Source transition stays enabled after firing
     const enableAfterFire = isSource ? 'true' : 'false';
 
-    // Conflict messages: add enabled(Tj, t) to LHS and enabled(Tj, false) to RHS
+    // Conflict messages: add enabled(Tj, state-tj) to LHS and enabled(Tj, false) to RHS
     let conflictLhs = '', conflictRhs = '';
     const allToDisable = new Set([...conflicts, ...inhAffected]);
     allToDisable.forEach(cTid => {
-      conflictLhs += `enabled(${mName(cTid)},t) `;
+      conflictLhs += `enabled(${mName(cTid)},state-${mName(cTid).toLowerCase()}) `;
       conflictRhs += `enabled(${mName(cTid)},false) `;
     });
 
